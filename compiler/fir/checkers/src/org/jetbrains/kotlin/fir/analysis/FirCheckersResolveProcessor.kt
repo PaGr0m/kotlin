@@ -20,7 +20,7 @@ import org.jetbrains.kotlin.fir.visitors.compose
 class FirCheckersResolveProcessor(
     session: FirSession,
     scopeSession: ScopeSession
-) : FirTransformerBasedResolveProcessor(session, scopeSession) {
+) : FirTransformerBasedResolveProcessor<Nothing>(session, scopeSession) {
     val diagnosticCollector = FirDiagnosticsCollector.create(session)
 
     override val transformer: FirTransformer<Nothing?> = FirCheckersRunnerTransformer(diagnosticCollector)

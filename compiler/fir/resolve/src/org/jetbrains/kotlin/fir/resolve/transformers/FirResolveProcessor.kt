@@ -19,13 +19,13 @@ abstract class FirGlobalResolveProcessor(session: FirSession, scopeSession: Scop
     abstract fun process()
 }
 
-abstract class FirTransformerBasedResolveProcessor(
+abstract class FirTransformerBasedResolveProcessor<T>(
     session: FirSession,
     scopeSession: ScopeSession
 ) : FirResolveProcessor(session, scopeSession) {
-    abstract val transformer: FirTransformer<Nothing?>
+    abstract val transformer: FirTransformer<T?>
 
     fun processFile(file: FirFile) {
-        file.transform<FirFile, Nothing?>(transformer, null)
+        file.transform<FirFile, T?>(transformer, null)
     }
 }

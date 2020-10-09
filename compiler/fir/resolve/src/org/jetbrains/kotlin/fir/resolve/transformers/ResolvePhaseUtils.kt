@@ -43,7 +43,7 @@ fun FirResolvePhase.createCompilerProcessorByPhase(
 fun FirResolvePhase.createTransformerBasedProcessorByPhase(
     session: FirSession,
     scopeSession: ScopeSession
-): FirTransformerBasedResolveProcessor {
+): FirTransformerBasedResolveProcessor<*> {
     return when (this) {
         RAW_FIR -> throw IllegalStateException("Raw FIR building phase does not have a transformer")
         ANNOTATIONS_FOR_PLUGINS -> FirPluginAnnotationsResolveProcessor(session, scopeSession)
@@ -65,7 +65,7 @@ fun FirResolvePhase.createTransformerBasedProcessorByPhase(
 private class FirDummyTransformerBasedProcessor(
     session: FirSession,
     scopeSession: ScopeSession
-) : FirTransformerBasedResolveProcessor(session, scopeSession) {
+) : FirTransformerBasedResolveProcessor<Nothing?>(session, scopeSession) {
     override val transformer: FirTransformer<Nothing?>
         get() = DummyTransformer
 

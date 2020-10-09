@@ -18,7 +18,7 @@ class FirTotalResolveProcessor(session: FirSession) {
     fun process(files: List<FirFile>) {
         for (processor in processors) {
             when (processor) {
-                is FirTransformerBasedResolveProcessor -> {
+                is FirTransformerBasedResolveProcessor<*> -> {
                     for (file in files) {
                         processor.processFile(file)
                     }
@@ -45,7 +45,7 @@ fun createAllTransformerBasedResolveProcessors(
     session: FirSession,
     scopeSession: ScopeSession? = null,
     pluginPhasesEnabled: Boolean = false,
-): List<FirTransformerBasedResolveProcessor> {
+): List<FirTransformerBasedResolveProcessor<*>> {
     return createAllResolveProcessors(scopeSession, pluginPhasesEnabled) {
         createTransformerBasedProcessorByPhase(session, it)
     }

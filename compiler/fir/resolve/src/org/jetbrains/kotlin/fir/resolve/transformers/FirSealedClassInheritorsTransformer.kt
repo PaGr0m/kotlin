@@ -26,7 +26,10 @@ import org.jetbrains.kotlin.fir.visitors.FirTransformer
 import org.jetbrains.kotlin.fir.visitors.compose
 import org.jetbrains.kotlin.name.ClassId
 
-class FirSealedClassInheritorsProcessor(session: FirSession, scopeSession: ScopeSession) : FirTransformerBasedResolveProcessor(session, scopeSession) {
+class FirSealedClassInheritorsProcessor(
+    session: FirSession,
+    scopeSession: ScopeSession
+) : FirTransformerBasedResolveProcessor<Nothing>(session, scopeSession) {
     override val transformer = FirSealedClassInheritorsTransformer()
 }
 

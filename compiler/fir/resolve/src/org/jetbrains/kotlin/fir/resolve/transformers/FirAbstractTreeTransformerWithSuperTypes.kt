@@ -29,10 +29,10 @@ import org.jetbrains.kotlin.fir.types.ConeKotlinType
 import org.jetbrains.kotlin.fir.types.ConeLookupTagBasedType
 import org.jetbrains.kotlin.fir.visitors.CompositeTransformResult
 
-abstract class FirAbstractTreeTransformerWithSuperTypes(
+abstract class FirAbstractTreeTransformerWithSuperTypes<T>(
     phase: FirResolvePhase,
     protected val scopeSession: ScopeSession
-) : FirAbstractTreeTransformer<Nothing?>(phase) {
+) : FirAbstractTreeTransformer<T>(phase) {
     protected val scopes = mutableListOf<FirScope>()
     protected val towerScope = FirCompositeScope(scopes.asReversed())
 
@@ -49,14 +49,14 @@ abstract class FirAbstractTreeTransformerWithSuperTypes(
 
     protected fun resolveNestedClassesSupertypes(
         firClass: FirClass<*>,
-        data: Nothing?
+        data: T
     ): CompositeTransformResult<FirStatement> {
         firClass.replaceResolvePhase(transformerPhase)
         return withScopeCleanup {
             // Otherwise annotations may try to resolve
             // themselves as inner classes of the `firClass`
             // if their names match
-            firClass.transformAnnotations(this, null)
+            firClass.transformAnnotations(this, data)
 
             // ? Is it Ok to use original file session here ?
             val superTypes = lookupSuperTypes(

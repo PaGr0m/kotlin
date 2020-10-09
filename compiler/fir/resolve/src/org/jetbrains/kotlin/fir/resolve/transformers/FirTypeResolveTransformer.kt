@@ -19,7 +19,9 @@ import org.jetbrains.kotlin.fir.types.impl.FirImplicitBuiltinTypeRef
 import org.jetbrains.kotlin.fir.visitors.CompositeTransformResult
 import org.jetbrains.kotlin.fir.visitors.compose
 
-class FirTypeResolveProcessor(session: FirSession, scopeSession: ScopeSession) : FirTransformerBasedResolveProcessor(session, scopeSession) {
+class FirTypeResolveProcessor(
+    session: FirSession, scopeSession: ScopeSession
+) : FirTransformerBasedResolveProcessor<FirDeclarationStatus>(session, scopeSession) {
     override val transformer = FirTypeResolveTransformer(session, scopeSession)
 }
 
@@ -37,7 +39,7 @@ class FirTypeResolveTransformer(
     override val session: FirSession,
     scopeSession: ScopeSession,
     initialScopes: List<FirScope> = emptyList()
-) : FirAbstractTreeTransformerWithSuperTypes(
+) : FirAbstractTreeTransformerWithSuperTypes<FirDeclarationStatus?>(
     phase = FirResolvePhase.TYPES,
     scopeSession
 ) {
@@ -46,9 +48,30 @@ class FirTypeResolveTransformer(
         scopes.addAll(initialScopes.asReversed())
     }
 
+    private val classes = mutableListOf<FirClass<*>>()
+
+    private val containingClass: FirClass<*>? get() = classes.lastOrNull()
+
     private val typeResolverTransformer: FirSpecificTypeResolverTransformer = FirSpecificTypeResolverTransformer(session)
 
-    override fun transformFile(file: FirFile, data: Nothing?): CompositeTransformResult<FirFile> {
+    private inline fun storeClass(
+        klass: FirClass<*>,
+        computeResult: () -> CompositeTransformResult<FirStatement>
+    ): CompositeTransformResult<FirStatement> {
+        classes += klass
+        val result = computeResult()
+        classes.removeAt(classes.lastIndex)
+        return result
+    }
+
+    override fun transformDeclarationStatus(
+        declarationStatus: FirDeclarationStatus,
+        data: FirDeclarationStatus?
+    ): CompositeTransformResult<FirDeclarationStatus> {
+        return (data ?: declarationStatus).compose()
+    }
+
+    override fun transformFile(file: FirFile, data: FirDeclarationStatus?): CompositeTransformResult<FirFile> {
         checkSessionConsistency(file)
         return withScopeCleanup {
             scopes.addAll(createImportingScopes(file, session, scopeSession))
@@ -56,7 +79,7 @@ class FirTypeResolveTransformer(
         }
     }
 
-    override fun transformRegularClass(regularClass: FirRegularClass, data: Nothing?): CompositeTransformResult<FirStatement> {
+    override fun transformRegularClass(regularClass: FirRegularClass, data: FirDeclarationStatus?): CompositeTransformResult<FirStatement> {
         withScopeCleanup {
             regularClass.addTypeParametersScope()
             regularClass.typeParameters.forEach {
@@ -65,28 +88,37 @@ class FirTypeResolveTransformer(
             unboundCyclesInTypeParametersSupertypes(regularClass)
         }
 
-        return resolveNestedClassesSupertypes(regularClass, data)
+        return storeClass(regularClass) {
+            regularClass.transformStatus(this, regularClass.resolveModality(regularClass.status, containingClass))
+            resolveNestedClassesSupertypes(regularClass, data)
+        }
     }
 
-    override fun transformAnonymousObject(anonymousObject: FirAnonymousObject, data: Nothing?): CompositeTransformResult<FirStatement> {
-        return resolveNestedClassesSupertypes(anonymousObject, data)
+    override fun transformAnonymousObject(
+        anonymousObject: FirAnonymousObject,
+        data: FirDeclarationStatus?
+    ): CompositeTransformResult<FirStatement> {
+        return storeClass(anonymousObject) {
+            return resolveNestedClassesSupertypes(anonymousObject, data)
+        }
     }
 
-    override fun transformConstructor(constructor: FirConstructor, data: Nothing?): CompositeTransformResult<FirDeclaration> {
+    override fun transformConstructor(constructor: FirConstructor, data: FirDeclarationStatus?): CompositeTransformResult<FirDeclaration> {
         return withScopeCleanup {
             constructor.addTypeParametersScope()
+            constructor.transformStatus(this, constructor.resolveModality(constructor.status, containingClass))
             transformDeclaration(constructor, data)
         }
     }
 
-    override fun transformTypeAlias(typeAlias: FirTypeAlias, data: Nothing?): CompositeTransformResult<FirDeclaration> {
+    override fun transformTypeAlias(typeAlias: FirTypeAlias, data: FirDeclarationStatus?): CompositeTransformResult<FirDeclaration> {
         return withScopeCleanup {
             typeAlias.addTypeParametersScope()
             transformDeclaration(typeAlias, data)
         }
     }
 
-    override fun transformEnumEntry(enumEntry: FirEnumEntry, data: Nothing?): CompositeTransformResult<FirDeclaration> {
+    override fun transformEnumEntry(enumEntry: FirEnumEntry, data: FirDeclarationStatus?): CompositeTransformResult<FirDeclaration> {
         enumEntry.replaceResolvePhase(FirResolvePhase.TYPES)
         enumEntry.transformReturnTypeRef(this, data)
         enumEntry.transformTypeParameters(this, data)
@@ -94,10 +126,11 @@ class FirTypeResolveTransformer(
         return enumEntry.compose()
     }
 
-    override fun transformProperty(property: FirProperty, data: Nothing?): CompositeTransformResult<FirDeclaration> {
+    override fun transformProperty(property: FirProperty, data: FirDeclarationStatus?): CompositeTransformResult<FirDeclaration> {
         return withScopeCleanup {
             property.addTypeParametersScope()
             property.replaceResolvePhase(FirResolvePhase.TYPES)
+            property.transformStatus(this, property.resolveModality(property.status, containingClass))
             property.transformTypeParameters(this, data)
                 .transformReturnTypeRef(this, data)
                 .transformReceiverTypeRef(this, data)
@@ -116,9 +149,10 @@ class FirTypeResolveTransformer(
         }
     }
 
-    override fun transformSimpleFunction(simpleFunction: FirSimpleFunction, data: Nothing?): CompositeTransformResult<FirDeclaration> {
+    override fun transformSimpleFunction(simpleFunction: FirSimpleFunction, data: FirDeclarationStatus?): CompositeTransformResult<FirDeclaration> {
         return withScopeCleanup {
             simpleFunction.addTypeParametersScope()
+            simpleFunction.transformStatus(this, simpleFunction.resolveModality(simpleFunction.status, containingClass))
             transformDeclaration(simpleFunction, data).also {
                 unboundCyclesInTypeParametersSupertypes(it.single as FirTypeParametersOwner)
             }
@@ -152,38 +186,38 @@ class FirTypeResolveTransformer(
         }
     }
 
-    override fun transformImplicitTypeRef(implicitTypeRef: FirImplicitTypeRef, data: Nothing?): CompositeTransformResult<FirTypeRef> {
+    override fun transformImplicitTypeRef(implicitTypeRef: FirImplicitTypeRef, data: FirDeclarationStatus?): CompositeTransformResult<FirTypeRef> {
         if (implicitTypeRef is FirImplicitBuiltinTypeRef) return transformTypeRef(implicitTypeRef, data)
         return implicitTypeRef.compose()
     }
 
-    override fun transformTypeRef(typeRef: FirTypeRef, data: Nothing?): CompositeTransformResult<FirTypeRef> {
+    override fun transformTypeRef(typeRef: FirTypeRef, data: FirDeclarationStatus?): CompositeTransformResult<FirTypeRef> {
         return typeResolverTransformer.transformTypeRef(typeRef, towerScope)
     }
 
-    override fun transformValueParameter(valueParameter: FirValueParameter, data: Nothing?): CompositeTransformResult<FirStatement> {
+    override fun transformValueParameter(valueParameter: FirValueParameter, data: FirDeclarationStatus?): CompositeTransformResult<FirStatement> {
         valueParameter.transformReturnTypeRef(this, data)
         valueParameter.transformAnnotations(this, data)
         valueParameter.transformVarargTypeToArrayType()
         return valueParameter.compose()
     }
 
-    override fun transformBlock(block: FirBlock, data: Nothing?): CompositeTransformResult<FirStatement> {
+    override fun transformBlock(block: FirBlock, data: FirDeclarationStatus?): CompositeTransformResult<FirStatement> {
         return block.compose()
     }
 
     override fun transformDelegatedConstructorCall(
         delegatedConstructorCall: FirDelegatedConstructorCall,
-        data: Nothing?
+        data: FirDeclarationStatus?
     ): CompositeTransformResult<FirStatement> {
         delegatedConstructorCall.replaceConstructedTypeRef(
-            delegatedConstructorCall.constructedTypeRef.transform<FirTypeRef, Nothing?>(this, data).single
+            delegatedConstructorCall.constructedTypeRef.transform<FirTypeRef, FirDeclarationStatus?>(this, data).single
         )
         delegatedConstructorCall.transformCalleeReference(this, data)
         return delegatedConstructorCall.compose()
     }
 
-    override fun transformAnnotationCall(annotationCall: FirAnnotationCall, data: Nothing?): CompositeTransformResult<FirStatement> {
+    override fun transformAnnotationCall(annotationCall: FirAnnotationCall, data: FirDeclarationStatus?): CompositeTransformResult<FirStatement> {
         annotationCall.transformAnnotationTypeRef(this, data)
         return annotationCall.compose()
     }

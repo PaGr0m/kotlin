@@ -329,8 +329,11 @@ open class FirDeclarationsResolveTransformer(transformer: FirBodyResolveTransfor
 
     private fun FirDeclaration.resolveStatus(status: FirDeclarationStatus, containingClass: FirClass<*>? = null): FirDeclarationStatus {
         val containingDeclaration = context.containerIfAny
-        return resolveStatus(
-            status, containingClass as? FirRegularClass, isLocal = containingDeclaration != null && containingClass == null
+        val statusWithModality = resolveModality(
+            status, containingClass as? FirRegularClass
+        )
+        return resolveVisibility(
+            statusWithModality, containingClass as? FirRegularClass, isLocal = containingDeclaration != null && containingClass == null
         )
     }
 

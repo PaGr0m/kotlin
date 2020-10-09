@@ -30,7 +30,7 @@ import org.jetbrains.kotlin.fir.visitors.compose
 class FirImplicitTypeBodyResolveProcessor(
     session: FirSession,
     scopeSession: ScopeSession
-) : FirTransformerBasedResolveProcessor(session, scopeSession) {
+) : FirTransformerBasedResolveProcessor<Nothing>(session, scopeSession) {
     override val transformer = FirImplicitTypeBodyResolveTransformerAdapter(session, scopeSession)
 }
 

@@ -26,7 +26,10 @@ import org.jetbrains.kotlin.fir.visitors.CompositeTransformResult
 import org.jetbrains.kotlin.fir.visitors.compose
 import org.jetbrains.kotlin.name.FqName
 
-class FirPluginAnnotationsResolveProcessor(session: FirSession, scopeSession: ScopeSession) : FirTransformerBasedResolveProcessor(session, scopeSession) {
+class FirPluginAnnotationsResolveProcessor(
+    session: FirSession,
+    scopeSession: ScopeSession
+) : FirTransformerBasedResolveProcessor<Nothing>(session, scopeSession) {
     override val transformer = FirPluginAnnotationsResolveTransformer(session, scopeSession)
 }
 

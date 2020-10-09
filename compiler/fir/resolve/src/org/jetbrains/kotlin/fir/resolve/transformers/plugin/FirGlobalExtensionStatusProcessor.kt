@@ -44,7 +44,7 @@ class FirGlobalExtensionStatusProcessor(
 class FirTransformerBasedExtensionStatusProcessor(
     session: FirSession,
     scopeSession: ScopeSession
-) : FirTransformerBasedResolveProcessor(session, scopeSession) {
+) : FirTransformerBasedResolveProcessor<Nothing>(session, scopeSession) {
     override val transformer: FirTransformer<Nothing?> = StatusUpdater()
 
     private inner class StatusUpdater : FirDefaultTransformer<Nothing?>() {

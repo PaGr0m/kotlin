@@ -158,12 +158,12 @@ class FirResolveBench(val withProgress: Boolean) {
 
     private fun runStage(processor: FirResolveProcessor, firFileSequence: Sequence<FirFile>) {
         when (processor) {
-            is FirTransformerBasedResolveProcessor -> runStage(processor, firFileSequence)
+            is FirTransformerBasedResolveProcessor<*> -> runStage(processor, firFileSequence)
             is FirGlobalResolveProcessor -> runStage(processor)
         }
     }
 
-    private fun runStage(processor: FirTransformerBasedResolveProcessor, firFileSequence: Sequence<FirFile>) {
+    private fun runStage(processor: FirTransformerBasedResolveProcessor<*>, firFileSequence: Sequence<FirFile>) {
         val transformer = processor.transformer
         for (firFile in firFileSequence) {
             processWithTimeMeasure(
