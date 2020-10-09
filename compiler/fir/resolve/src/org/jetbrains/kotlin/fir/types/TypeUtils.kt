@@ -5,7 +5,11 @@
 
 package org.jetbrains.kotlin.fir.types
 
-import org.jetbrains.kotlin.descriptors.Visibilities
+import org.jetbrains.kotlin.descriptors.Visibilities.Internal
+import org.jetbrains.kotlin.descriptors.Visibilities.Private
+import org.jetbrains.kotlin.descriptors.Visibilities.Protected
+import org.jetbrains.kotlin.descriptors.Visibilities.Public
+import org.jetbrains.kotlin.descriptors.Visibilities.Unknown
 import org.jetbrains.kotlin.descriptors.Visibility
 import org.jetbrains.kotlin.fir.FirFakeSourceElementKind
 import org.jetbrains.kotlin.fir.FirSession
@@ -231,7 +235,7 @@ fun FirTypeRef.approximatedIfNeededOrSelf(
     isInlineFunction: Boolean = false
 ): FirTypeRef {
     val approximatedType = if (this is FirResolvedTypeRef &&
-        (containingCallableVisibility == Visibilities.Public || containingCallableVisibility == Visibilities.Protected)
+        (containingCallableVisibility == Public || containingCallableVisibility == Protected || containingCallableVisibility == Unknown)
     ) {
         if (type.requiresApproximationInPublicPosition()) this.approximated(approximator, toSuper = true) else this
     } else {
@@ -273,10 +277,11 @@ private fun FirTypeRef.hideLocalTypeIfNeeded(
     }
     // Approximate types for non-private (all but package private or private) members.
     // Also private inline functions, as per KT-33917.
-    if (containingCallableVisibility == Visibilities.Public ||
-        containingCallableVisibility == Visibilities.Protected ||
-        containingCallableVisibility == Visibilities.Internal ||
-        (containingCallableVisibility == Visibilities.Private && isInlineFunction)
+    if (containingCallableVisibility == Public ||
+        containingCallableVisibility == Protected ||
+        containingCallableVisibility == Internal ||
+        containingCallableVisibility == Unknown ||
+        (containingCallableVisibility == Private && isInlineFunction)
     ) {
         val firClass =
             (((this as? FirResolvedTypeRef)

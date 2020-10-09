@@ -15,10 +15,10 @@ enum class FirResolvePhase(val pluginPhase: Boolean = false, val noProcessor: Bo
     TYPES,
     ARGUMENTS_OF_PLUGIN_ANNOTATIONS(pluginPhase = true),
     EXTENSION_STATUS_UPDATE(pluginPhase = true),
-    STATUS,
     CONTRACTS,
     NEW_MEMBERS_GENERATION(pluginPhase = true),
     IMPLICIT_TYPES_BODY_RESOLVE,
+    STATUS,
     BODY_RESOLVE;
 
     val requiredToLaunch: FirResolvePhase
@@ -26,7 +26,8 @@ enum class FirResolvePhase(val pluginPhase: Boolean = false, val noProcessor: Bo
             RAW_FIR -> RAW_FIR
             IMPORTS -> RAW_FIR
             STATUS -> TYPES
-            IMPLICIT_TYPES_BODY_RESOLVE, BODY_RESOLVE -> STATUS
+            IMPLICIT_TYPES_BODY_RESOLVE -> TYPES
+            BODY_RESOLVE -> STATUS
             else -> values()[ordinal - 1]
         }
 
@@ -34,7 +35,7 @@ enum class FirResolvePhase(val pluginPhase: Boolean = false, val noProcessor: Bo
 
     companion object {
         // Short-cut
-        val DECLARATIONS = STATUS
+        val DECLARATIONS = TYPES
         val ANALYZED_DEPENDENCIES = BODY_RESOLVE
     }
 }
