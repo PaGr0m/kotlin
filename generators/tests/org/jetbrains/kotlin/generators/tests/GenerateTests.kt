@@ -50,6 +50,7 @@ import org.jetbrains.kotlin.idea.codeInsight.postfix.AbstractPostfixTemplateProv
 import org.jetbrains.kotlin.idea.codeInsight.surroundWith.AbstractSurroundWithTest
 import org.jetbrains.kotlin.idea.codeInsight.unwrap.AbstractUnwrapRemoveTest
 import org.jetbrains.kotlin.idea.completion.AbstractHighLevelJvmBasicCompletionTest
+import org.jetbrains.kotlin.idea.completion.AbstractHighLevelMultiFileJvmBasicCompletionTest
 import org.jetbrains.kotlin.idea.completion.test.*
 import org.jetbrains.kotlin.idea.completion.test.handlers.*
 import org.jetbrains.kotlin.idea.completion.test.weighers.AbstractBasicCompletionWeigherTest
@@ -1075,6 +1076,10 @@ fun main(args: Array<String>) {
             testClass<AbstractHighLevelJvmBasicCompletionTest> {
                 model("basic/common")
                 model("basic/java")
+            }
+
+            testClass<AbstractHighLevelMultiFileJvmBasicCompletionTest> {
+                model("basic/multifile", testMethod = "doTestWrapped", extension = null, recursive = false)
             }
 
             testClass<AbstractHighLevelBasicCompletionHandlerTest> {
