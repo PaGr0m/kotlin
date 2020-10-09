@@ -19,11 +19,13 @@ abstract class AbstractMultiFileJvmBasicCompletionTest : KotlinCompletionTestCas
                 setType(completionType)
                 complete(invocationCount)
                 myItems
-            }, CompletionType.BASIC, 0)
+            }, CompletionType.BASIC, 0, additionalValidDirectives)
         })
     }
 
     override fun getTestDataPath(): String {
         return KotlinTestUtils.getTestsRoot(this::class.java) + "/" + getTestName(false) + "/"
     }
+
+    protected open val additionalValidDirectives: List<String> = emptyList()
 }
