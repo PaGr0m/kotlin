@@ -6,8 +6,8 @@
 package org.jetbrains.kotlin.fir.resolve.transformers
 
 import org.jetbrains.kotlin.fir.FirSession
-import org.jetbrains.kotlin.fir.declarations.FirDeclaration
-import org.jetbrains.kotlin.fir.declarations.FirResolvePhase
+import org.jetbrains.kotlin.fir.declarations.*
+import org.jetbrains.kotlin.fir.render
 import org.jetbrains.kotlin.fir.resolve.fullyExpandedType
 import org.jetbrains.kotlin.fir.resolve.toSymbol
 import org.jetbrains.kotlin.fir.symbols.AbstractFirBasedSymbol
@@ -26,7 +26,7 @@ fun AbstractFirBasedSymbol<*>.ensureResolved(
     val availablePhase = fir.resolvePhase
     if (availablePhase >= requiredPhase) return
     val resolver = fir.session.phaseManager
-        ?: error("phaseManager should be defined when working with FIR in phased mode")
+        ?: error("phaseManager should be defined when working with FIR in phased mode; available = $availablePhase, required = $requiredPhase, FIR = ${fir.render()}")
 
     resolver.ensureResolved(this, requiredPhase)
 }
