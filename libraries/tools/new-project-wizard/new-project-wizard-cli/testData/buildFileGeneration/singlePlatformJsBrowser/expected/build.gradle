@@ -5,6 +5,13 @@ plugins {
 group = 'testGroupId'
 version = '1.0-SNAPSHOT'
 
+repositories {
+    mavenCentral()
+    maven {
+        url 'KOTLIN_REPO'
+    }
+}
+
 dependencies {
     testImplementation 'org.jetbrains.kotlin:kotlin-test-js'
 }

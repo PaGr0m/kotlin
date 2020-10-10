@@ -8,8 +8,8 @@ group = "me.user"
 version = "1.0-SNAPSHOT"
 
 repositories {
-    mavenCentral()
     google()
+    mavenCentral()
     maven {
         url = uri("KOTLIN_REPO")
     }

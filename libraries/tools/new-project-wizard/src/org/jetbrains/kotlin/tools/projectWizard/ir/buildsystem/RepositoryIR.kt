@@ -14,6 +14,7 @@ interface RepositoryWrapper {
 
 fun <W : RepositoryWrapper> List<W>.distinctAndSorted() =
     distinctBy(RepositoryWrapper::repository)
+        .sortedBy { it.repository.url }
         .sortedBy { wrapper ->
             if (wrapper.repository is DefaultRepository) 0 else 1
         }

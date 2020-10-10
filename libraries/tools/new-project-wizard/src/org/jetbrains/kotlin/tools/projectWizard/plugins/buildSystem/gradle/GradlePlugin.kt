@@ -134,7 +134,8 @@ abstract class GradlePlugin(context: Context) : BuildSystemPlugin(context) {
                             .toPersistentList()
                     ).let {
                         if (it.isRoot && commonRepositories.isNotEmpty()) {
-                            it.withIrs(AllProjectsRepositoriesIR(commonRepositories.mapTo(mutableListOf(), ::RepositoryIR)))
+                            val repositories = commonRepositories.map(::RepositoryIR).distinctAndSorted()
+                            it.withIrs(AllProjectsRepositoriesIR(repositories))
                         } else it
                     }.asSuccess()
                 }

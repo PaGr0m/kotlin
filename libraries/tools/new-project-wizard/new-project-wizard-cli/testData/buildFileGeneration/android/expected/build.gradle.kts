@@ -20,10 +20,10 @@ version = "1.0-SNAPSHOT"
 
 allprojects {
     repositories {
+        google()
         mavenCentral()
         maven {
             url = uri("KOTLIN_REPO")
         }
-        google()
     }
 }
