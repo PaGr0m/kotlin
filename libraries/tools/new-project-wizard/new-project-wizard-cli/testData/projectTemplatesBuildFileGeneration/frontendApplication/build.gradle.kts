@@ -5,6 +5,14 @@ plugins {
 group = "me.user"
 version = "1.0-SNAPSHOT"
 
+repositories {
+    mavenCentral()
+    jcenter()
+    maven {
+        url = uri("KOTLIN_REPO")
+    }
+}
+
 dependencies {
     testImplementation(kotlin("test-js"))
 }

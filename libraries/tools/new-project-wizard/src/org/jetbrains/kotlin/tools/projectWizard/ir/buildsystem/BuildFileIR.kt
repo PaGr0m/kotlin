@@ -58,7 +58,7 @@ data class BuildFileIR(
             }
             sectionCall("plugins", irsOfType<BuildSystemPluginIR>()); nl(lineBreaks = 2)
             pom.render(this); nl()
-            distinctPluginRepositories().takeIf { it.isNotEmpty() }?.let { repositories ->
+            distinctRepositories().takeIf { it.isNotEmpty() }?.let { repositories ->
                 sectionCall("repositories", repositories)
                 nl(lineBreaks = 2)
             }
