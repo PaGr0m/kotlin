@@ -71,7 +71,7 @@ object AndroidSinglePlatformModuleConfigurator :
                 AndroidGradlePlugin.APPLICATION -> module.javaPackage(configurationData.pomIr)
                 AndroidGradlePlugin.LIBRARY -> null
             },
-            newManifestPath = AndroidTargetConfigurator.getNewAndroidManifestPath(module),
+            newManifestPath = getNewAndroidManifestPath(module),
             printVersionCode = true,
             printBuildTypes = true,
         )
