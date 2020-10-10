@@ -16,7 +16,6 @@ dependencies {
 
 android {
     compileSdkVersion(29)
-    sourceSets["main"].manifest.srcFile("src/androidAppMain/AndroidManifest.xml")
     defaultConfig {
         applicationId = "me.user.androidApp"
         minSdkVersion(24)
