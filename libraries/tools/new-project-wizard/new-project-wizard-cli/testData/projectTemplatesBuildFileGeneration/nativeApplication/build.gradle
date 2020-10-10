@@ -7,13 +7,6 @@ plugins {
 group = 'me.user'
 version = '1.0-SNAPSHOT'
 
-repositories {
-    mavenCentral()
-    maven {
-        url 'KOTLIN_REPO'
-    }
-}
-
 kotlin {
     def hostOs = System.getProperty("os.name")
     def isMingwX64 = hostOs.startsWith("Windows")

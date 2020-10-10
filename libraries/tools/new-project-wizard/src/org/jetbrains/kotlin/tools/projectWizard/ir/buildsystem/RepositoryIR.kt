@@ -1,5 +1,6 @@
 package org.jetbrains.kotlin.tools.projectWizard.ir.buildsystem
 
+import org.jetbrains.kotlin.tools.projectWizard.ir.buildsystem.gradle.GradleIR
 import org.jetbrains.kotlin.tools.projectWizard.plugins.printer.BuildFilePrinter
 import org.jetbrains.kotlin.tools.projectWizard.plugins.printer.GradlePrinter
 import org.jetbrains.kotlin.tools.projectWizard.plugins.printer.MavenPrinter
@@ -44,5 +45,16 @@ data class RepositoryIR(override val repository: Repository) : BuildSystemIR, Re
             }
         }
         else -> Unit
+    }
+}
+
+
+data class AllProjectsRepositoriesIR(val repositoriesIR: List<RepositoryIR>) : BuildSystemIR, GradleIR, FreeIR {
+    override fun GradlePrinter.renderGradle() {
+        sectionCall("allprojects", needIndent = true) {
+            sectionCall("repositories") {
+                repositoriesIR.listNl()
+            }
+        }
     }
 }
