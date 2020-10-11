@@ -29,6 +29,7 @@ import com.intellij.testFramework.runInEdtAndWait
 import com.intellij.util.io.exists
 import gnu.trove.TIntArrayList
 import org.jetbrains.kotlin.checkers.BaseDiagnosticsTest
+import org.jetbrains.kotlin.checkers.diagnostics.DebugInfoDiagnostic
 import org.jetbrains.kotlin.checkers.diagnostics.SyntaxErrorDiagnostic
 import org.jetbrains.kotlin.checkers.utils.CheckerTestUtil
 import org.jetbrains.kotlin.checkers.utils.DiagnosticsRenderingConfiguration
@@ -49,9 +50,11 @@ import org.jetbrains.kotlin.idea.stubs.AbstractMultiModuleTest
 import org.jetbrains.kotlin.idea.util.sourceRoots
 import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.test.KotlinTestUtils
+import org.junit.Ignore
 import java.io.File
 import java.nio.file.Paths
 
+@Ignore
 class CodeMetaInfoTestCase(
     val codeMetaInfoTypes: Collection<AbstractCodeMetaInfoRenderConfiguration>,
     val checkNoDiagnosticError: Boolean = false
@@ -197,6 +200,10 @@ class CodeMetaInfoTestCase(
                                 }
                                 is AbstractDiagnostic<*> -> {
                                     val diagnostic: AbstractDiagnostic<*> = diagnosticCodeMetaInfo.diagnostic
+                                    diagnostic.factory.toString() in (highlightingCodeMetaInfo as HighlightingCodeMetaInfo).highlightingInfo.description
+                                }
+                                is DebugInfoDiagnostic -> {
+                                    val diagnostic: DebugInfoDiagnostic = diagnosticCodeMetaInfo.diagnostic
                                     diagnostic.factory.toString() in (highlightingCodeMetaInfo as HighlightingCodeMetaInfo).highlightingInfo.description
                                 }
                                 else -> throw java.lang.IllegalArgumentException("Unknown diagnostic type: ${diagnosticCodeMetaInfo.diagnostic}")
