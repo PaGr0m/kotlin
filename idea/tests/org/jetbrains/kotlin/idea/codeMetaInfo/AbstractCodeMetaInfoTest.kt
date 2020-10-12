@@ -209,7 +209,11 @@ class CodeMetaInfoTestCase(
                                 else -> throw java.lang.IllegalArgumentException("Unknown diagnostic type: ${diagnosticCodeMetaInfo.diagnostic}")
                             }
                 },
-            ) { "Could not find DIAGNOSTIC for ${(highlightingCodeMetaInfo as HighlightingCodeMetaInfo).highlightingInfo}" }
+            ) {
+                val availableDiagnostics = //For debug tests failures
+                    diagnostics.filter { it.diagnostic is DebugInfoDiagnostic }.joinToString("\n") { it.diagnostic.factory.toString() }
+                "Could not find DIAGNOSTIC for ${(highlightingCodeMetaInfo as HighlightingCodeMetaInfo).highlightingInfo}, available: $availableDiagnostics"
+            }
         }
     }
 }
