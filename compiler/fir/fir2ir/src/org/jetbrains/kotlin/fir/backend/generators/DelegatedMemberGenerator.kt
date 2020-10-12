@@ -6,6 +6,8 @@
 package org.jetbrains.kotlin.fir.backend.generators
 
 import org.jetbrains.kotlin.descriptors.Modality
+import org.jetbrains.kotlin.descriptors.Visibilities
+import org.jetbrains.kotlin.descriptors.Visibility
 import org.jetbrains.kotlin.fir.backend.*
 import org.jetbrains.kotlin.fir.declarations.*
 import org.jetbrains.kotlin.fir.scopes.*
@@ -114,6 +116,17 @@ internal class DelegatedMemberGenerator(
         return this
     }
 
+    private fun FirCallableMemberDeclaration<*>.delegateVisibility(): Visibility {
+        if (visibility != Visibilities.Unknown) return visibility
+        when (origin) {
+            FirDeclarationOrigin.FakeOverride -> symbol.overriddenSymbol?.fir?.delegateVisibility()?.let { return it }
+            FirDeclarationOrigin.Delegated -> delegatedWrapperData?.wrapped?.delegateVisibility()?.let { return it }
+            else -> {
+            }
+        }
+        return visibility
+    }
+
     private fun generateDelegatedFunction(
         subClass: IrClass,
         firSubClass: FirClass<*>,
@@ -124,7 +137,8 @@ internal class DelegatedMemberGenerator(
         val delegateFunction =
             declarationStorage.createIrFunction(
                 delegateOverride, subClass, origin = IrDeclarationOrigin.DELEGATED_MEMBER,
-                containingClass = firSubClass.symbol.toLookupTag()
+                containingClass = firSubClass.symbol.toLookupTag(),
+                givenVisibility = delegateOverride.delegateVisibility()
             )
         delegateFunction.overriddenSymbols =
             delegateOverride.generateOverriddenFunctionSymbols(firSubClass, session, scopeSession, declarationStorage)
@@ -189,7 +203,8 @@ internal class DelegatedMemberGenerator(
         val delegateProperty =
             declarationStorage.createIrProperty(
                 firDelegateProperty, subClass, origin = IrDeclarationOrigin.DELEGATED_MEMBER,
-                containingClass = firSubClass.symbol.toLookupTag()
+                containingClass = firSubClass.symbol.toLookupTag(),
+                givenVisibility = firDelegateProperty.delegateVisibility()
             )
 
         delegateProperty.getter!!.body = createDelegateBody(irField, delegateProperty.getter!!, superProperty.getter!!)

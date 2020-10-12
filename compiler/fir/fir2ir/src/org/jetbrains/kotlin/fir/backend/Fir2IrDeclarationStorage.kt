@@ -404,6 +404,7 @@ class Fir2IrDeclarationStorage(
         origin: IrDeclarationOrigin = IrDeclarationOrigin.DEFINED,
         isLocal: Boolean = false,
         containingClass: ConeClassLikeLookupTag? = null,
+        givenVisibility: Visibility? = null,
     ): IrSimpleFunction {
         val simpleFunction = function as? FirSimpleFunction
         val isLambda = function.source?.elementType == KtNodeTypes.FUNCTION_LITERAL
@@ -416,7 +417,7 @@ class Fir2IrDeclarationStorage(
         classifierStorage.preCacheTypeParameters(function)
         val name = simpleFunction?.name
             ?: if (isLambda) Name.special("<anonymous>") else Name.special("<no name provided>")
-        val visibility = simpleFunction?.visibility ?: Visibilities.Local
+        val visibility = givenVisibility ?: simpleFunction?.visibility ?: Visibilities.Local
         val isSuspend =
             if (isLambda) ((function as FirAnonymousFunction).typeRef as? FirResolvedTypeRef)?.type?.isSuspendFunctionType(session) == true
             else simpleFunction?.isSuspend == true
@@ -676,6 +677,7 @@ class Fir2IrDeclarationStorage(
         origin: IrDeclarationOrigin = IrDeclarationOrigin.DEFINED,
         isLocal: Boolean = false,
         containingClass: ConeClassLikeLookupTag? = null,
+        givenVisibility: Visibility = property.visibility,
     ): IrProperty {
         classifierStorage.preCacheTypeParameters(property)
         val signature = if (isLocal) null else signatureComposer.composeSignature(property, containingClass)
@@ -683,7 +685,9 @@ class Fir2IrDeclarationStorage(
             val result = declareIrProperty(signature, property.containerSource) { symbol ->
                 irFactory.createProperty(
                     startOffset, endOffset, origin, symbol,
-                    property.name, components.visibilityConverter.convertToDescriptorVisibility(property.visibility), property.modality!!,
+                    property.name,
+                    components.visibilityConverter.convertToDescriptorVisibility(givenVisibility),
+                    property.modality!!,
                     isVar = property.isVar,
                     isConst = property.isConst,
                     isLateinit = property.isLateInit,
