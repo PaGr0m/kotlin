@@ -30,9 +30,18 @@ class KotlinSwiftPackagePlugin : Plugin<Project> {
         project: Project,
         swiftPackageExtension: SwiftPackageExtension
     ) {
-        project.registerTask<SwiftPackageTask>("hello") {
+        project.registerTask<SwiftPackageTask>("SPM_hello") {
             it.doLast {
+                println("start")
                 println(swiftPackageExtension.name)
+                println("end")
+            }
+        }
+
+        project.registerTask<SwiftPackageTask>("SPM_product") {
+            it.doLast {
+                println("start")
+                println(swiftPackageExtension.productsLibraries)
                 println("end")
             }
         }

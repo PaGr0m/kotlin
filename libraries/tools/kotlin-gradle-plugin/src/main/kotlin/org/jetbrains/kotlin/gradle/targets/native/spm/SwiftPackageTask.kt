@@ -8,7 +8,7 @@ package org.jetbrains.kotlin.gradle.targets.native.spm
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.TaskAction
 
-class SwiftPackageTask : DefaultTask() {
+open class SwiftPackageTask : DefaultTask() {
 
     @TaskAction
     fun hello() {
