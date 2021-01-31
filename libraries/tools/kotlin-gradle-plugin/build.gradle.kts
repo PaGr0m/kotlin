@@ -215,6 +215,11 @@ pluginBundle {
         id = "org.jetbrains.kotlin.native.cocoapods",
         display = "Kotlin Native plugin for CocoaPods integration"
     )
+    create(
+        name = "kotlinNativeSpmPlugin",
+        id = "org.jetbrains.kotlin.native.spm",
+        display = "Kotlin Native plugin for Swift Package Manager integration"
+    )
 }
 
 publishPluginMarkers()
